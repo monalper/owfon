@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <title>OWFHP</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&display=swap" rel="stylesheet">
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+    <header class="app-header">
+        <div class="brand">
+            <div class="brand-row">
+                <span class="brand-title">Openwall Fon<span class="brand-dot">.</span></span>
+            </div>
+            <div id="statusIndicator" class="status-text">Son güncelleme: -</div>
+        </div>
+        <button id="refreshBtn" class="icon-button" type="button" aria-label="Yenile">
+            <i data-lucide="refresh-cw"></i>
+        </button>
+    </header>
+
+    <main class="app-main">
+        <section class="block block-primary">
+            <div class="block-header">
+                <h1 class="block-title">Anlık tahmini fiyat</h1>
+            </div>
+            <div class="primary-value" id="estimatedPrice">-</div>
+            <div class="primary-change change-badge" id="estimatedChange">-%0,00</div>
+        </section>
+
+        <section class="grid-two">
+            <section class="block">
+                <div class="block-header">
+                    <h2 class="block-title">TEFAS son fiyat</h2>
+                </div>
+                <div class="secondary-value" id="officialPrice">-</div>
+                <p class="muted" id="officialDate">-</p>
+            </section>
+
+            <section class="block">
+                <div class="block-header">
+                    <h2 class="block-title">Manuel fiyat</h2>
+                </div>
+                <div class="field-group">
+                    <label class="field">
+                        <input
+                            id="manualPriceInput"
+                            type="text"
+                            inputmode="decimal"
+                            autocomplete="off"
+                            placeholder="Fiyat gir">
+                    </label>
+                    <button id="saveManualBtn" class="button button-main" type="button">
+                        <span>Kaydet</span>
+                        <i data-lucide="save"></i>
+                    </button>
+                </div>
+            </section>
+        </section>
+
+        <section class="block">
+            <div class="block-header">
+                <h2 class="block-title">Portföy etkileri</h2>
+            </div>
+            <div class="stock-list" id="stockList"></div>
+        </section>
+
+        <footer class="app-footer">
+            <p class="muted">Sitedeki veriler tahminidir. Yahoo'dan gelen verilerle güncellenmektedir. Yatırım kararını buraya bakarak vermeyin.</p>
+        </footer>
+    </main>
+</div>
+
+<script>
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+</script>
+<script src="script.js"></script>
+</body>
+</html>

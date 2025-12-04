@@ -1,0 +1,343 @@
+/* ---- Temel Ayarlar ---- */
+:root {
+    /* Palet */
+    --bg: #1D1D1F;
+    --surface: #414141;
+    --text-main: #F5F5F7;
+    --text-muted: #A1A1A3;
+  
+    /* Ek renkler (yön bilgisi için) */
+    --positive: #30D158;
+    --negative: #FF453A;
+  
+    /* Radius & spacing */
+    --radius-md: 12px;
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 12px;
+    --space-lg: 16px;
+    --space-xl: 24px;
+  }
+  
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  html,
+  body {
+    height: 100%;
+  }
+  
+  body {
+    font-family: "Inter Tight", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: var(--bg);
+    color: var(--text-main);
+    -webkit-font-smoothing: antialiased;
+  }
+  
+  /* ---- Uygulama iskeleti ---- */
+  
+  .app {
+    min-height: 100vh;
+    max-width: 540px;
+    margin: 0 auto;
+    padding: calc(env(safe-area-inset-top, 16px) + 8px)
+             calc(env(safe-area-inset-right, 16px) + 12px)
+             calc(env(safe-area-inset-bottom, 16px) + 16px)
+             calc(env(safe-area-inset-left, 16px) + 12px);
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* ---- Header ---- */
+  
+  .app-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: var(--space-xl);
+  }
+  
+  .brand {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+  
+  .brand-row {
+    display: flex;
+    align-items: baseline;
+    gap: 2px;
+  }
+  
+  .brand-title {
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.06em;
+  }
+  
+  .brand-dot {
+    color: var(--text-main);
+  }
+  
+  .status-text {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  
+  .icon-button {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    background: transparent;
+    color: var(--text-main);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 999px;
+  }
+  
+  .icon-button i {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .icon-button:disabled {
+    opacity: 0.4;
+  }
+  
+  /* ---- Ana içerik ---- */
+  
+  .app-main {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xl);
+    flex: 1;
+  }
+  
+  /* Blok yapısı – kutu yok, sadece boşluk */
+  .block {
+    padding: var(--space-sm) 0;
+  }
+  
+  .block-primary {
+    padding-top: 0;
+  }
+  
+  .block-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-sm);
+  }
+  
+  .block-title {
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--text-muted);
+  }
+  
+  /* Fiyatlar */
+  
+  .primary-value {
+    font-size: 40px;
+    font-weight: 600;
+    letter-spacing: -0.06em;
+    line-height: 1.1;
+  }
+  
+  .primary-change {
+    margin-top: var(--space-sm);
+  }
+  
+  .change-badge {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+  
+  .change-badge.pos {
+    color: var(--positive);
+  }
+  
+  .change-badge.neg {
+    color: var(--negative);
+  }
+  
+  .secondary-value {
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+  }
+  
+  /* Grid */
+  
+  .grid-two {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-xl);
+  }
+  
+  @media (min-width: 640px) {
+    .grid-two {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: var(--space-xl);
+      row-gap: 0;
+    }
+  }
+  
+  /* Form alanları */
+  
+  .field-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    margin-top: var(--space-sm);
+  }
+  
+  .field {
+    display: flex;
+    align-items: center;
+    background-color: var(--surface);
+    border-radius: var(--radius-md);
+    padding: 10px 12px;
+  }
+  
+  .field input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-main);
+    font-size: 16px;
+    outline: none;
+  }
+  
+  .field input::placeholder {
+    color: var(--text-muted);
+  }
+  
+  /* Yeni Kaydet butonu */
+  
+  .button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 18px;
+    border-radius: 999px;
+    border: none;
+    font-size: 14px;
+    font-weight: 500;
+    background: transparent;
+    color: var(--text-main);
+  }
+  
+  .button-main {
+    background-color: var(--text-main);
+    color: var(--bg);
+    align-self: flex-end;
+  }
+  
+  .button-main i {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .button-main:disabled {
+    opacity: 0.6;
+  }
+  
+  /* ---- Liste ---- */
+  
+  .stock-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    margin-top: var(--space-sm);
+  }
+  
+  .stock-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+  }
+  
+  .stock-main {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  
+  .stock-sym {
+    font-size: 15px;
+    font-weight: 600;
+  }
+  
+  .stock-w {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  
+  .stock-vals {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+  }
+  
+  .stock-pct {
+    font-size: 14px;
+    font-weight: 600;
+  }
+  
+  .stock-imp {
+    font-size: 12px;
+  }
+  
+  .color-pos {
+    color: var(--positive);
+  }
+  
+  .color-neg {
+    color: var(--negative);
+  }
+  
+  /* ---- Footer ---- */
+  
+  .app-footer {
+    padding-top: var(--space-lg);
+    font-size: 11px;
+  }
+  
+  .muted {
+    color: var(--text-muted);
+  }
+  
+  /* ---- Focus stilleri ---- */
+  
+  button:focus-visible,
+  input:focus-visible {
+    outline: 2px solid var(--surface);
+    outline-offset: 2px;
+  }
+  
+  /* Küçük ekranlar için ayarlar */
+  
+  @media (max-width: 360px) {
+    .primary-value {
+      font-size: 34px;
+    }
+  
+    .brand-title {
+      font-size: 24px;
+    }
+  }
+  
