@@ -1,14 +1,28 @@
 const STORAGE_PRICE = "tly_m_price";
 const STORAGE_DATE = "tly_m_date";
 
-// --- AYARLAR ---
-// Veriler Ekim 2025 TLY-TERA Fon Dağılım Raporu'ndan alınmıştır.
-const REPO_WEIGHT = 11.04; // Portföydeki Ters Repo Ağırlığı (%)
-const REPO_ANNUAL_RATE = 48.0; // Tahmini Yıllık Ters Repo Faizi (%)
+// --- AYARLAR VE AĞIRLIKLAR (GÜNCELLENDİ) ---
 
+// Ters Repo Ayarları
+const REPO_WEIGHT = 11.04; // Portföydeki Ters Repo Ağırlığı (%)
+const REPO_ANNUAL_RATE = 48.0; // Tahmini Yıllık Ters Repo Faizi (%) - Piyasa faizlerine göre ayarlanabilir.
+
+// DSTKF ve Diğer Hisseler Ayarları (%17.23'lük Grubun Ayrıştırılması)
+// DİKKAT: DSTKF_REAL_W değerini kendi raporundaki gerçek oranla güncellemelisin!
+const DSTKF_GROUP_TOTAL = 17.23;
+const DSTKF_REAL_W = 10.00; // <--- TAHMİNİ DEĞER: DSTKF'nin tek başına ağırlığı. Lütfen düzeltin.
+const OTHER_W = DSTKF_GROUP_TOTAL - DSTKF_REAL_W; // Kalan kısım XU100'e endekslenecek.
+
+// Portfolio Data
+// DSTKF.IS 17.23'lük ağırlığı bölünerek listeye eklendi.
 const HOLDINGS = [
   { s: "TERA.IS", w: 22.49 }, 
-  { s: "DSTKF.IS", w: 17.23 },  
+  
+  // Grubu İkiye Böldük
+  { s: "DSTKF.IS", w: DSTKF_REAL_W },       // Gerçek DSTKF Ağırlığı
+  // Bilinmeyen "Diğer" hisselerin BIST 100 (XU100.IS) ile hareket ettiğini varsayıyoruz.
+  { s: "XU100.IS", w: OTHER_W, name: "DİĞER HİS." }, 
+  
   { s: "TURSG.IS", w: 1.23 },  
   { s: "HMV.IS", w: 11.12 },  
   { s: "PEKGY.IS", w: 6.96 }, 
@@ -19,11 +33,11 @@ const HOLDINGS = [
   { s: "TEHOL.IS", w: 13.25 }
 ];
 
-// Toplam Ağırlık Hesabı (Hisseler + Repo)
+// Toplam Ağırlık Hesabı (Hisseler + Repo dahil edilerek normalize edildi)
 const stocksTotalW = HOLDINGS.reduce((a, b) => a + b.w, 0);
 const totalW = stocksTotalW + REPO_WEIGHT; 
 
-// UI Elements
+// UI Elements (DEĞİŞMEDİ)
 const ui = {
   status: document.getElementById("statusIndicator"),
   estPrice: document.getElementById("estimatedPrice"),
@@ -36,7 +50,7 @@ const ui = {
   saveBtn: document.getElementById("saveManualBtn")
 };
 
-// Helpers
+// Helpers (DEĞİŞMEDİ)
 const fmtMoney = (n) => n?.toLocaleString("tr-TR", {minimumFractionDigits: 4, maximumFractionDigits: 4}) ?? "-";
 const fmtPct = (n) => n?.toLocaleString("tr-TR", {minimumFractionDigits: 2, maximumFractionDigits: 2}) ?? "-";
 const setStatus = (msg) => ui.status.textContent = msg;
@@ -47,7 +61,7 @@ function getTefasDateStr(dateObj) {
   return `${d}.${m}.${dateObj.getFullYear()}`;
 }
 
-// API Calls
+// API Calls (DEĞİŞMEDİ)
 async function getTefasPrice() {
   const today = new Date();
   for (let i = 0; i < 7; i++) {
@@ -90,7 +104,7 @@ async function getYahooData(symbol) {
   }
 }
 
-// Main Logic
+// Main Logic (GÜNCELLENDİ)
 async function update() {
   ui.refresh.disabled = true;
   setStatus("Veriler güncelleniyor...");
@@ -113,6 +127,7 @@ async function update() {
   }
 
   // 2. Stocks & Impact Calculation
+  // Hisselerin Yahoo verilerini eş zamanlı çek
   const promises = HOLDINGS.map(async h => {
     const { pct } = await getYahooData(h.s);
     // Hissenin portföydeki *gerçek* ağırlığı (Repo dahil toplam içindeki payı)
@@ -123,7 +138,7 @@ async function update() {
 
   const results = await Promise.all(promises);
 
-  // --- REPO HESAPLAMASI ---
+  // --- REPO HESAPLAMASI (EKLENDİ) ---
   // Günlük Getiri = Yıllık Oran / 365
   const dailyRepoPct = REPO_ANNUAL_RATE / 365;
   const repoNormW = REPO_WEIGHT / totalW;
@@ -136,7 +151,7 @@ async function update() {
     pct: dailyRepoPct,
     impact: repoImpact
   });
-  // ------------------------
+  // ------------------------------------
   
   // 3. Render & Final Sum
   let totalWeightedPct = 0;
@@ -150,7 +165,9 @@ async function update() {
     // Görsel Ayarlar
     const colorClass = r.pct >= 0 ? "color-pos" : "color-neg";
     const sign = r.pct >= 0 ? "+" : "";
-    const cleanSym = r.s.replace(".IS",""); // .IS uzantısını temizle
+    
+    // Sembol ismini belirle: Özel isim varsa onu kullan, yoksa .IS uzantısını temizle
+    const cleanSym = r.name ? r.name : r.s.replace(".IS",""); 
     
     item.innerHTML = `
       <div class="stock-main">
@@ -165,6 +182,7 @@ async function update() {
     ui.list.appendChild(item);
   });
   
+  // Lucide ikonlarını yeniden oluştur (uygulamanın kullandığı kütüphane)
   if (typeof lucide !== 'undefined') {
       lucide.createIcons();
   }
@@ -188,7 +206,7 @@ async function update() {
   ui.refresh.disabled = false;
 }
 
-// Event Listeners
+// Event Listeners (DEĞİŞMEDİ)
 ui.saveBtn.addEventListener("click", () => {
   const val = parseFloat(ui.input.value);
   if(val > 0) {
