@@ -35,7 +35,9 @@ const ui = {
   list: document.getElementById("stockList"),
   refresh: document.getElementById("refreshBtn"),
   input: document.getElementById("manualPriceInput"),
-  saveBtn: document.getElementById("saveManualBtn")
+  saveBtn: document.getElementById("saveManualBtn"),
+  manualSection: document.getElementById("manualSection"),
+  toggleManual: document.getElementById("toggleManualBtn")
 };
 
 // Helpers
@@ -223,7 +225,8 @@ async function update() {
   ui.refresh.disabled = false;
 }
 
-// Event Listeners (Değişmedi)
+// Event Listeners
+
 ui.saveBtn.addEventListener("click", () => {
   const val = parseFloat(ui.input.value);
   if(val > 0) {
@@ -239,6 +242,11 @@ if(localStorage.getItem(STORAGE_PRICE)) {
 }
 
 ui.refresh.addEventListener("click", update);
+
+ui.toggleManual.addEventListener("click", () => {
+  if (!ui.manualSection) return;
+  ui.manualSection.classList.toggle("is-hidden");
+});
 
 // Otomatik Başlat
 update();
