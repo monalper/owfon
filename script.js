@@ -3,20 +3,17 @@ const STORAGE_DATE = "tly_m_date";
 
 // Portfolio Data
 // Veriler Ekim 2025 TLY-TERA Fon Dağılım Raporu'ndan alınmıştır.
-// Not: TEHOLR (Rüçhan) ağırlığı, ana hisse TEHOL.IS üzerine eklenmiştir.
 const HOLDINGS = [
-  { s: "TEHOL.IS", w: 60.65 }, // TEHOL (%42.29) + TEHOLR (%18.36)
-  { s: "TERA.IS", w: 20.18 },  // TERA Yatırım
-  { s: "DSTKF.IS", w: 4.13 },  // Destek Faktoring
-  { s: "TURSG.IS", w: 4.11 },  // Türkiye Sigorta
-  { s: "SMRVA.IS", w: 2.37 },  // Sümer Varlık
-  { s: "ADESE.IS", w: 1.77 },  // Adese
-  { s: "HEDEF.IS", w: 1.67 },  // Hedef Holding
-  { s: "GRTHO.IS", w: 0.86 },  // Grainturk
-  { s: "PEKGY.IS", w: 0.61 },  // Peker GYO
-  { s: "DMRGD.IS", w: 0.44 },  // DMR Unlu Mamuller
-  { s: "ENSRI.IS", w: 0.42 },  // Ensari Deri
-  { s: "IZFAS.IS", w: 0.20 }   // İzmir Fırça
+  { s: "TERA.IS", w: 29.10 }, 
+  { s: "TEHOL.IS", w: 17.14 },  
+  { s: "SMRVA.IS", w: 11.28 },  
+  { s: "RALYH.IS", w: 11.12 },  
+  { s: "TRHOL.IS", w: 9.68 }, 
+  { s: "PEKGY.IS", w: 9.01 },  
+  { s: "DSTKF.IS", w: 4.65 }, 
+  { s: "GRTHO.IS", w: 0.86 }, 
+  { s: "HMV.IS", w: 3.90 },  
+  { s: "XU030.IS", w: 4.12 }
 ];
 const totalW = HOLDINGS.reduce((a, b) => a + b.w, 0);
 
@@ -185,4 +182,5 @@ if(localStorage.getItem(STORAGE_PRICE)) {
 ui.refresh.addEventListener("click", update);
 
 // Auto-start
+
 update();
