@@ -12,7 +12,8 @@ const HOLDINGS = [
   { s: "PEKGY.IS", w: 9.01 },  
   { s: "DSTKF.IS", w: 4.65 }, 
   { s: "GRTHO.IS", w: 0.86 }, 
-  { s: "HMV.IS", w: 3.90 }
+  { s: "HMV.IS", w: 3.90 },  
+  { s: "XU030.IS", w: 4.12 }
 ];
 const totalW = HOLDINGS.reduce((a, b) => a + b.w, 0);
 
@@ -183,4 +184,5 @@ ui.refresh.addEventListener("click", update);
 // Auto-start
 
 update();
+
 
