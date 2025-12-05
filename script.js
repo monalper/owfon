@@ -1,46 +1,31 @@
 const STORAGE_PRICE = "tly_m_price";
 const STORAGE_DATE = "tly_m_date";
 
-// --- AYARLAR VE AĞIRLIKLAR (GÜNCELLENDİ) ---
+// --- AYARLAR VE AĞIRLIKLAR (GÜNCEL GÖRSELE GÖRE) ---
 
-// Ters Repo Ayarları
-const REPO_WEIGHT = 10.15; // Portföydeki Ters Repo Ağırlığı (%)
-const REPO_ANNUAL_RATE = 39.50; // Tahmini Yıllık Ters Repo Faizi (%) - Piyasa faizlerine göre ayarlanabilir.
+// Sabit Getirili Kısım (Görseldeki BPP - Para Piyasası Fonu)
+const REPO_WEIGHT = 23.34; // Görseldeki BPP Ağırlığı
+const REPO_ANNUAL_RATE = 42.00; // Tahmini Yıllık BPP/Mevduat Faizi (%) - (Piyasa şartlarına göre güncelleyebilirsin)
 
-// DSTKF ve Diğer Hisseler Ayarları (%17.23'lük Grubun Ayrıştırılması)
-// DİKKAT: DSTKF_REAL_W değerini kendi raporundaki gerçek oranla güncellemelisin!
-const DSTKF_GROUP_TOTAL = 17.23;
-const DSTKF_REAL_W = 4.65; // <--- TAHMİNİ DEĞER: DSTKF'nin tek başına ağırlığı.
-const OTHER_W = DSTKF_GROUP_TOTAL - DSTKF_REAL_W; // Kalan kısım XU100'e endekslenecek.
-
-// Portfolio Data
+// Portfolio Data (Görseldeki Dağılım)
 const HOLDINGS = [
-  { s: "TERA.IS", w: 22.49 }, 
+  { s: "TERA.IS", w: 20.31 },
+  { s: "TEHOL.IS", w: 13.67 },
+  { s: "SMRVA.IS", w: 9.17 },
+  { s: "RALYH.IS", w: 8.23 },
+  { s: "TRHOL.IS", w: 6.84 },
+  { s: "PEKGY.IS", w: 6.75 },
+  { s: "DSTKF.IS", w: 5.94 },
   
-  // Grubu İkiye Böldük
-  { s: "DSTKF.IS", w: DSTKF_REAL_W },       // Gerçek DSTKF Ağırlığı
-  // Bilinmeyen "Diğer" hisselerin BIST 100 (XU100.IS) ile hareket ettiğini varsayıyoruz.
-  { s: "XU100.IS", w: OTHER_W, name: "DİĞER HİS." }, 
-  
-  { s: "TURSG.IS", w: 1.23 },  
-  { s: "PEKGY.IS", w: 6.96 }, 
-  { s: "TRHOL.IS", w: 7.48 },  
-  { s: "RALYH.IS", w: 8.59 }, 
-  { s: "SMRVA.IS", w: 8.72 }, 
-  
-  // --- GÜNCELLEME BURADA YAPILDI ---
-  // HMV bir fon olduğu için anlık verisi yoktur. HMV yerine XU100 endeksi baz alınıyor.
-  { s: "XU030.IS", w: 3.90, name: "HMV FONU" },  
-  // ---------------------------------
-
-  { s: "TEHOL.IS", w: 13.25 }
+  // "DİĞER" kısmı XU100 endeksi ile takip ediliyor
+  { s: "XU100.IS", w: 5.75, name: "DİĞER (BIST100)" } 
 ];
 
-// Toplam Ağırlık Hesabı (Hisseler + Repo dahil edilerek normalize edildi)
+// Toplam Ağırlık Hesabı (Normalize etmek için)
 const stocksTotalW = HOLDINGS.reduce((a, b) => a + b.w, 0);
 const totalW = stocksTotalW + REPO_WEIGHT; 
 
-// UI Elements (DEĞİŞMEDİ)
+// UI Elements
 const ui = {
   status: document.getElementById("statusIndicator"),
   estPrice: document.getElementById("estimatedPrice"),
@@ -53,7 +38,7 @@ const ui = {
   saveBtn: document.getElementById("saveManualBtn")
 };
 
-// Helpers (DEĞİŞMEDİ)
+// Helpers
 const fmtMoney = (n) => n?.toLocaleString("tr-TR", {minimumFractionDigits: 4, maximumFractionDigits: 4}) ?? "-";
 const fmtPct = (n) => n?.toLocaleString("tr-TR", {minimumFractionDigits: 2, maximumFractionDigits: 2}) ?? "-";
 const setStatus = (msg) => ui.status.textContent = msg;
@@ -64,7 +49,7 @@ function getTefasDateStr(dateObj) {
   return `${d}.${m}.${dateObj.getFullYear()}`;
 }
 
-// API Calls (DEĞİŞMEDİ)
+// API Calls
 async function getTefasPrice() {
   const today = new Date();
   for (let i = 0; i < 7; i++) {
@@ -107,7 +92,7 @@ async function getYahooData(symbol) {
   }
 }
 
-// Main Logic (GÜNCELLENDİ)
+// Main Logic
 async function update() {
   ui.refresh.disabled = true;
   setStatus("Veriler güncelleniyor...");
@@ -130,10 +115,9 @@ async function update() {
   }
 
   // 2. Stocks & Impact Calculation
-  // Hisselerin Yahoo verilerini eş zamanlı çek
   const promises = HOLDINGS.map(async h => {
     const { pct } = await getYahooData(h.s);
-    // Hissenin portföydeki *gerçek* ağırlığı (Repo dahil toplam içindeki payı)
+    // Hissenin portföydeki *gerçek* ağırlığı
     const normW = h.w / totalW; 
     const impact = pct * normW;
     return { ...h, pct, impact };
@@ -141,23 +125,25 @@ async function update() {
 
   const results = await Promise.all(promises);
 
-  // --- REPO HESAPLAMASI (EKLENDİ) ---
+  // --- BPP / REPO HESAPLAMASI ---
   // Günlük Getiri = Yıllık Oran / 365
   const dailyRepoPct = REPO_ANNUAL_RATE / 365;
   const repoNormW = REPO_WEIGHT / totalW;
   const repoImpact = dailyRepoPct * repoNormW;
 
-  // Repoyu listeye ekle
+  // BPP'yi listeye ekle (Listenin başına veya sonuna koyabilirsin, burada sona ekliyoruz)
   results.push({
-    s: "TERS REPO",
+    s: "BPP (Para Piyasası)", // Görseldeki isim
     w: REPO_WEIGHT,
     pct: dailyRepoPct,
     impact: repoImpact
   });
-  // ------------------------------------
   
   // 3. Render & Final Sum
   let totalWeightedPct = 0;
+
+  // Sıralama: En yüksek ağırlıktan en düşüğe (isteğe bağlı, şu an array sırası)
+  // results.sort((a,b) => b.w - a.w);
 
   results.forEach(r => {
     totalWeightedPct += r.impact;
@@ -165,11 +151,10 @@ async function update() {
     const item = document.createElement("div");
     item.className = "stock-item";
     
-    // Görsel Ayarlar
     const colorClass = r.pct >= 0 ? "color-pos" : "color-neg";
     const sign = r.pct >= 0 ? "+" : "";
     
-    // Sembol ismini belirle: Özel isim varsa onu kullan, yoksa .IS uzantısını temizle
+    // Sembol ismini belirle
     const cleanSym = r.name ? r.name : r.s.replace(".IS",""); 
     
     item.innerHTML = `
@@ -185,7 +170,6 @@ async function update() {
     ui.list.appendChild(item);
   });
   
-  // Lucide ikonlarını yeniden oluştur (uygulamanın kullandığı kütüphane)
   if (typeof lucide !== 'undefined') {
       lucide.createIcons();
   }
@@ -209,7 +193,7 @@ async function update() {
   ui.refresh.disabled = false;
 }
 
-// Event Listeners (DEĞİŞMEDİ)
+// Event Listeners
 ui.saveBtn.addEventListener("click", () => {
   const val = parseFloat(ui.input.value);
   if(val > 0) {
@@ -228,5 +212,3 @@ ui.refresh.addEventListener("click", update);
 
 // Auto-start
 update();
-
-
