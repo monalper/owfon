@@ -1,11 +1,12 @@
 const STORAGE_PRICE = "tly_m_price";
 const STORAGE_DATE = "tly_m_date";
 
-// --- AYARLAR VE AĞIRLIKLAR (GÜNCEL GÖRSELE GÖRE) ---
+// --- AYARLAR VE AĞIRLIKLAR ---
 
-// Sabit Getirili Kısım (Görseldeki BPP - Para Piyasası Fonu)
-const REPO_WEIGHT = 23.34; // Görseldeki BPP Ağırlığı
-const REPO_ANNUAL_RATE = 42.00; // Tahmini Yıllık BPP/Mevduat Faizi (%) - (Piyasa şartlarına göre güncelleyebilirsin)
+// Sabit Getirili Kısım (BPP Fonu)
+// Bu kısım borsa düşse de sabit getiri sağlar.
+const BPP_WEIGHT = 23.34; 
+const BPP_ANNUAL_RATE = 44.00; // Mevduat/Para piyasası yıllık tahmini getiri
 
 // Portfolio Data (Görseldeki Dağılım)
 const HOLDINGS = [
@@ -18,12 +19,11 @@ const HOLDINGS = [
   { s: "DSTKF.IS", w: 5.94 },
   
   // "DİĞER" kısmı XU100 endeksi ile takip ediliyor
-  { s: "XU100.IS", w: 5.75, name: "DİĞER (BIST100)" } 
+  { s: "XU100.IS", w: 5.75, name: "DİĞER (BIST)" } 
 ];
 
-// Toplam Ağırlık Hesabı (Normalize etmek için)
-const stocksTotalW = HOLDINGS.reduce((a, b) => a + b.w, 0);
-const totalW = stocksTotalW + REPO_WEIGHT; 
+// Toplam Ağırlık (Normalize etmek için kullanılır, görselde 100 olduğu için 100'dür)
+const totalW = 100.0;
 
 // UI Elements
 const ui = {
@@ -49,9 +49,11 @@ function getTefasDateStr(dateObj) {
   return `${d}.${m}.${dateObj.getFullYear()}`;
 }
 
-// API Calls
+// --- API İŞLEMLERİ (KRİTİK GÜNCELLEME) ---
+
 async function getTefasPrice() {
   const today = new Date();
+  // 7 gün geriye giderek son fiyatı bulmaya çalışır
   for (let i = 0; i < 7; i++) {
     const d = new Date(today);
     d.setDate(d.getDate() - i);
@@ -71,34 +73,50 @@ async function getTefasPrice() {
         if(typeof p === "string") p = parseFloat(p.replace(/\./g,"").replace(",","."));
         return { price: p, date: dateStr };
       }
-    } catch(e) {}
+    } catch(e) { console.error("Tefas Error:", e); }
   }
   return null;
 }
 
 async function getYahooData(symbol) {
   try {
-    const res = await fetch(`/api/yahoo?symbol=${encodeURIComponent(symbol)}`);
+    // interval=1d ve range=5d yaparak garanti veri çekiyoruz
+    const res = await fetch(`/api/yahoo?symbol=${encodeURIComponent(symbol)}&interval=1d&range=5d`);
     const json = await res.json();
-    const quotes = json?.chart?.result?.[0]?.indicators?.quote?.[0]?.close || [];
-    const valid = quotes.filter(q => q != null);
-    if(valid.length < 2) return { pct: 0 };
+    const result = json?.chart?.result?.[0];
     
-    const first = valid[0];
-    const last = valid[valid.length - 1];
-    return { pct: (last - first) / first * 100 };
-  } catch {
+    if (!result) return { pct: 0 };
+
+    // Meta verisinden "Önceki Kapanış"ı (Previous Close) al
+    // Bu veri, doğru yüzde değişimi hesaplamak için en güvenilir kaynaktır.
+    const prevClose = result.meta.chartPreviousClose;
+    
+    // Anlık fiyat dizisi
+    const quotes = result.indicators.quote[0].close;
+    // Null olmayan son fiyatı bul
+    const currentPrice = quotes.filter(q => q != null).pop();
+
+    if (prevClose && currentPrice) {
+      // (Son Fiyat - Önceki Kapanış) / Önceki Kapanış
+      const changePct = ((currentPrice - prevClose) / prevClose) * 100;
+      return { pct: changePct };
+    }
+    
+    return { pct: 0 };
+
+  } catch (err) {
+    console.error(`Yahoo Data Error (${symbol}):`, err);
     return { pct: 0 };
   }
 }
 
-// Main Logic
+// --- ANA MANTIK ---
 async function update() {
   ui.refresh.disabled = true;
-  setStatus("Veriler güncelleniyor...");
+  setStatus("Veriler çekiliyor...");
   ui.list.innerHTML = "";
 
-  // 1. Base Price (Tefas or Manual)
+  // 1. Baz Fiyatı Al (Tefas veya Manuel)
   let base = await getTefasPrice();
   
   const manualP = localStorage.getItem(STORAGE_PRICE);
@@ -114,36 +132,37 @@ async function update() {
     ui.offDate.textContent = "-";
   }
 
-  // 2. Stocks & Impact Calculation
+  // 2. Hisse Verilerini Çek ve Hesapla
   const promises = HOLDINGS.map(async h => {
     const { pct } = await getYahooData(h.s);
-    // Hissenin portföydeki *gerçek* ağırlığı
-    const normW = h.w / totalW; 
-    const impact = pct * normW;
+    
+    // Portföye Etkisi = (Hissenin Günlük Değişimi) * (Portföydeki Ağırlığı)
+    // Örnek: Hisse %10 arttı, ağırlığı %20 ise -> 10 * 0.20 = %2 etki.
+    const impact = pct * (h.w / totalW);
+    
     return { ...h, pct, impact };
   });
 
   const results = await Promise.all(promises);
 
-  // --- BPP / REPO HESAPLAMASI ---
+  // 3. BPP (Para Piyasası) Sabit Getirisini Ekle
   // Günlük Getiri = Yıllık Oran / 365
-  const dailyRepoPct = REPO_ANNUAL_RATE / 365;
-  const repoNormW = REPO_WEIGHT / totalW;
-  const repoImpact = dailyRepoPct * repoNormW;
+  const dailyBppPct = BPP_ANNUAL_RATE / 365;
+  const bppImpact = dailyBppPct * (BPP_WEIGHT / totalW);
 
-  // BPP'yi listeye ekle (Listenin başına veya sonuna koyabilirsin, burada sona ekliyoruz)
   results.push({
-    s: "BPP (Para Piyasası)", // Görseldeki isim
-    w: REPO_WEIGHT,
-    pct: dailyRepoPct,
-    impact: repoImpact
+    s: "BPP (Nakit/Fon)",
+    w: BPP_WEIGHT,
+    pct: dailyBppPct,
+    impact: bppImpact,
+    isFixed: true // Özel işaretleme
   });
   
-  // 3. Render & Final Sum
+  // 4. Listeyi Oluştur ve Toplamı Hesapla
   let totalWeightedPct = 0;
 
-  // Sıralama: En yüksek ağırlıktan en düşüğe (isteğe bağlı, şu an array sırası)
-  // results.sort((a,b) => b.w - a.w);
+  // Ağırlığa göre sırala (İsteğe bağlı)
+  results.sort((a,b) => b.w - a.w);
 
   results.forEach(r => {
     totalWeightedPct += r.impact;
@@ -151,30 +170,39 @@ async function update() {
     const item = document.createElement("div");
     item.className = "stock-item";
     
-    const colorClass = r.pct >= 0 ? "color-pos" : "color-neg";
-    const sign = r.pct >= 0 ? "+" : "";
+    // Renk Ayarları (Pozitif/Negatif)
+    const isPos = r.pct >= 0;
+    const colorClass = isPos ? "color-pos" : "color-neg";
+    const sign = isPos ? "+" : "";
     
-    // Sembol ismini belirle
     const cleanSym = r.name ? r.name : r.s.replace(".IS",""); 
     
+    // Etki gösterimi (Örn: +0.25%)
+    const impactStr = `${sign}%${r.impact.toFixed(2)}`;
+
     item.innerHTML = `
       <div class="stock-main">
         <span class="stock-sym">${cleanSym}</span>
-        <span class="stock-w">%${r.w.toFixed(2)} Ağr.</span>
+        <span class="stock-w">%${r.w.toFixed(2)}</span>
       </div>
       <div class="stock-vals">
-        <span class="stock-pct ${colorClass}">${sign}%${fmtPct(r.pct)}</span>
-        <span class="stock-imp ${colorClass}">${sign}${fmtPct(r.impact * 100)} bp</span>
+        <div class="val-row">
+           <span class="lbl">Değ:</span>
+           <span class="stock-pct ${colorClass}">${sign}%${fmtPct(r.pct)}</span>
+        </div>
+        <div class="val-row">
+           <span class="lbl">Etki:</span>
+           <span class="stock-imp ${colorClass}">${impactStr}</span>
+        </div>
       </div>
     `;
     ui.list.appendChild(item);
   });
   
-  if (typeof lucide !== 'undefined') {
-      lucide.createIcons();
-  }
+  // İkonları güncelle
+  if (typeof lucide !== 'undefined') lucide.createIcons();
 
-  // 4. Final Display
+  // 5. Sonuçları Göster
   const finalSign = totalWeightedPct >= 0 ? "+" : "";
   const finalClass = totalWeightedPct >= 0 ? "pos" : "neg";
   
@@ -184,16 +212,18 @@ async function update() {
   if (base && base.price) {
     const estimated = base.price * (1 + totalWeightedPct / 100);
     ui.estPrice.textContent = fmtMoney(estimated) + " ₺";
-    setStatus("Son güncelleme: Şimdi");
+    
+    const time = new Date().toLocaleTimeString("tr-TR", {hour: '2-digit', minute:'2-digit'});
+    setStatus(`Güncellendi: ${time}`);
   } else {
     ui.estPrice.textContent = "--";
-    setStatus("TEFAS verisi eksik");
+    setStatus("TEFAS fiyatı bekleniyor");
   }
 
   ui.refresh.disabled = false;
 }
 
-// Event Listeners
+// Event Listeners (Değişmedi)
 ui.saveBtn.addEventListener("click", () => {
   const val = parseFloat(ui.input.value);
   if(val > 0) {
@@ -210,5 +240,5 @@ if(localStorage.getItem(STORAGE_PRICE)) {
 
 ui.refresh.addEventListener("click", update);
 
-// Auto-start
+// Otomatik Başlat
 update();
