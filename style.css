@@ -83,7 +83,6 @@
   .brand-title {
     font-size: 28px;
     font-weight: 600;
-    letter-spacing: -0.06em;
   }
   
   .brand-dot {
@@ -155,7 +154,6 @@
   .primary-value {
     font-size: 40px;
     font-weight: 600;
-    letter-spacing: -0.06em;
     line-height: 1.1;
   }
   
@@ -350,3 +348,4 @@
       font-size: 24px;
     }
   }
+
