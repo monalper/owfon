@@ -7,7 +7,6 @@ const HOLDINGS = [
   { s: "TERA.IS", w: 22.49 }, 
   { s: "DSTKF.IS", w: 17.23 },  
   { s: "TURSG.IS", w: 1.23 },  
-  { s: "HMV.IS", w: 11.12 },  
   { s: "PEKGY.IS", w: 6.96 }, 
   { s: "TRHOL.IS", w: 7.48 },  
   { s: "RALYH.IS", w: 8.59 }, 
@@ -184,6 +183,7 @@ ui.refresh.addEventListener("click", update);
 // Auto-start
 
 update();
+
 
 
 
