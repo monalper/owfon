@@ -30,7 +30,7 @@ const HOLDINGS = [
   
   // --- GÜNCELLEME BURADA YAPILDI ---
   // HMV bir fon olduğu için anlık verisi yoktur. HMV yerine XU100 endeksi baz alınıyor.
-  { s: "XU100.IS", w: 3.90, name: "HMV FONU" },  
+  { s: "XU030.IS", w: 3.90, name: "HMV FONU" },  
   // ---------------------------------
 
   { s: "TEHOL.IS", w: 13.25 }
@@ -228,3 +228,4 @@ ui.refresh.addEventListener("click", update);
 
 // Auto-start
 update();
+
