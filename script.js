@@ -5,12 +5,12 @@ const STORAGE_DATE = "tly_m_date";
 
 // Ters Repo Ayarları
 const REPO_WEIGHT = 11.04; // Portföydeki Ters Repo Ağırlığı (%)
-const REPO_ANNUAL_RATE = 48.0; // Tahmini Yıllık Ters Repo Faizi (%) - Piyasa faizlerine göre ayarlanabilir.
+const REPO_ANNUAL_RATE = 39.50; // Tahmini Yıllık Ters Repo Faizi (%) - Piyasa faizlerine göre ayarlanabilir.
 
 // DSTKF ve Diğer Hisseler Ayarları (%17.23'lük Grubun Ayrıştırılması)
 // DİKKAT: DSTKF_REAL_W değerini kendi raporundaki gerçek oranla güncellemelisin!
 const DSTKF_GROUP_TOTAL = 17.23;
-const DSTKF_REAL_W = 10.00; // <--- TAHMİNİ DEĞER: DSTKF'nin tek başına ağırlığı. Lütfen düzeltin.
+const DSTKF_REAL_W = 4.65; // <--- TAHMİNİ DEĞER: DSTKF'nin tek başına ağırlığı. Lütfen düzeltin.
 const OTHER_W = DSTKF_GROUP_TOTAL - DSTKF_REAL_W; // Kalan kısım XU100'e endekslenecek.
 
 // Portfolio Data
@@ -225,3 +225,4 @@ ui.refresh.addEventListener("click", update);
 
 // Auto-start
 update();
+
