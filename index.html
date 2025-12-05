@@ -22,9 +22,15 @@
             </div>
             <div id="statusIndicator" class="status-text">Son güncelleme: -</div>
         </div>
-        <button id="refreshBtn" class="icon-button" type="button" aria-label="Yenile">
-            <i data-lucide="refresh-cw"></i>
-        </button>
+
+        <div class="header-actions">
+            <button id="toggleManualBtn" class="icon-button" type="button" aria-label="Manuel fiyatı aç/kapat">
+                <i data-lucide="sliders-horizontal"></i>
+            </button>
+            <button id="refreshBtn" class="icon-button" type="button" aria-label="Yenile">
+                <i data-lucide="refresh-cw"></i>
+            </button>
+        </div>
     </header>
 
     <main class="app-main">
@@ -49,7 +55,7 @@
                 <div class="block-header">
                     <h2 class="block-title">Manuel fiyat</h2>
                 </div>
-                <div class="field-group">
+                <div class="field-group is-hidden" id="manualSection">
                     <label class="field">
                         <input
                             id="manualPriceInput"
