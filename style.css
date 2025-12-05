@@ -61,6 +61,12 @@
     justify-content: space-between;
     padding-bottom: var(--space-xl);
   }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
   
   .brand {
     display: flex;
@@ -201,6 +207,10 @@
     gap: var(--space-sm);
     margin-top: var(--space-sm);
   }
+
+  .is-hidden {
+    display: none;
+  }
   
   .field {
     display: flex;
@@ -340,4 +350,3 @@
       font-size: 24px;
     }
   }
-  
