@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <title>OWFHP - TLY</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="app">
+        <header class="app-header">
+            <div class="brand">
+                <a href="index.html">
+                    <img src="assets/tly.webp" alt="TLY" class="header-logo">
+                </a>
+                <div class="brand-info">
+                    <span class="brand-title">TLY</span>
+                    <span id="statusIndicator" class="status-text">Güncelleniyor...</span>
+                </div>
+            </div>
+            <div class="brand-actions">
+                <!-- Toggle Manual Price -->
+                <button id="toggleManualBtn" class="icon-button" type="button" aria-label="Ayarlar">
+                    <i data-lucide="settings-2"></i>
+                </button>
+                <button id="refreshBtn" class="icon-button" type="button" aria-label="Yenile">
+                    <i data-lucide="refresh-cw"></i>
+                </button>
+            </div>
+        </header>
+
+        <main class="app-main">
+
+            <!-- Hero Section -->
+            <section class="hero-section">
+                <div class="primary-value" id="estimatedPrice">-</div>
+                <div class="change-badge" id="estimatedChange">-%0,00</div>
+            </section>
+
+            <!-- Manual Price Section (Hidden) -->
+            <div id="manualPriceSection">
+                <h2 class="section-title">Manuel Referans Fiyatı</h2>
+                <div class="field-group">
+                    <div class="field">
+                        <input id="manualPriceInput" type="text" inputmode="decimal" autocomplete="off"
+                            placeholder="Fiyat girin...">
+                    </div>
+                    <button id="saveManualBtn" class="button-main" type="button">Kaydet</button>
+                </div>
+            </div>
+
+            <div class="grid-two">
+                <div class="info-card">
+                    <p class="section-title" style="margin:0;">TEFAS Fiyatı</p>
+                    <div class="secondary-value" id="officialPrice">-</div>
+                </div>
+                <div class="info-card">
+                    <p class="section-title" style="margin:0;">Tarih</p>
+                    <div class="secondary-value" id="officialDate" style="font-size: 18px; font-weight:500;">-</div>
+                </div>
+            </div>
+
+            <section>
+                <h2 class="section-title">Portföy Etkileri</h2>
+                <div class="stock-list" id="stockList"></div>
+            </section>
+
+        </main>
+
+        <footer class="app-footer">
+            <div class="footer-branding">
+                <img src="assets/favicon.svg" alt="Openwall" class="footer-logo">
+                <span class="footer-brand-name">Openwall Fon</span>
+            </div>
+            <div class="footer-nav">
+                <a href="https://finance.openwall.com.tr" target="_blank">Openwall Finance</a>
+                <a href="legal.html">Yasal Uyarı</a>
+                <a href="tly.html">TLY</a>
+                <a href="iog.html">IOG</a>
+            </div>
+            <div class="footer-bottom">
+                &copy; 2025 OWFon. Veriler tahminidir.
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    </script>
+    <script src="fund-core.js"></script>
+    <script src="tly.js"></script>
+</body>
+
+</html>
