@@ -10,11 +10,10 @@ const REPO_ANNUAL_RATE = 39.50; // Tahmini Yıllık Ters Repo Faizi (%) - Piyasa
 // DSTKF ve Diğer Hisseler Ayarları (%17.23'lük Grubun Ayrıştırılması)
 // DİKKAT: DSTKF_REAL_W değerini kendi raporundaki gerçek oranla güncellemelisin!
 const DSTKF_GROUP_TOTAL = 17.23;
-const DSTKF_REAL_W = 4.65; // <--- TAHMİNİ DEĞER: DSTKF'nin tek başına ağırlığı. Lütfen düzeltin.
+const DSTKF_REAL_W = 4.65; // <--- TAHMİNİ DEĞER: DSTKF'nin tek başına ağırlığı.
 const OTHER_W = DSTKF_GROUP_TOTAL - DSTKF_REAL_W; // Kalan kısım XU100'e endekslenecek.
 
 // Portfolio Data
-// DSTKF.IS 17.23'lük ağırlığı bölünerek listeye eklendi.
 const HOLDINGS = [
   { s: "TERA.IS", w: 22.49 }, 
   
@@ -28,7 +27,12 @@ const HOLDINGS = [
   { s: "TRHOL.IS", w: 7.48 },  
   { s: "RALYH.IS", w: 8.59 }, 
   { s: "SMRVA.IS", w: 8.72 }, 
-  { s: "HMV.IS", w: 3.90 },  
+  
+  // --- GÜNCELLEME BURADA YAPILDI ---
+  // HMV bir fon olduğu için anlık verisi yoktur. HMV yerine XU100 endeksi baz alınıyor.
+  { s: "XU100.IS", w: 3.90, name: "HMV FONU" },  
+  // ---------------------------------
+
   { s: "TEHOL.IS", w: 13.25 }
 ];
 
@@ -224,5 +228,3 @@ ui.refresh.addEventListener("click", update);
 
 // Auto-start
 update();
-
-
