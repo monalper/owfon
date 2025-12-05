@@ -1,12 +1,16 @@
 const STORAGE_PRICE = "tly_m_price";
 const STORAGE_DATE = "tly_m_date";
 
-// Portfolio Data
+// --- AYARLAR ---
 // Veriler Ekim 2025 TLY-TERA Fon Dağılım Raporu'ndan alınmıştır.
+const REPO_WEIGHT = 11.04; // Portföydeki Ters Repo Ağırlığı (%)
+const REPO_ANNUAL_RATE = 48.0; // Tahmini Yıllık Ters Repo Faizi (%)
+
 const HOLDINGS = [
   { s: "TERA.IS", w: 22.49 }, 
   { s: "DSTKF.IS", w: 17.23 },  
   { s: "TURSG.IS", w: 1.23 },  
+  { s: "HMV.IS", w: 11.12 },  
   { s: "PEKGY.IS", w: 6.96 }, 
   { s: "TRHOL.IS", w: 7.48 },  
   { s: "RALYH.IS", w: 8.59 }, 
@@ -14,7 +18,10 @@ const HOLDINGS = [
   { s: "HMV.IS", w: 3.90 },  
   { s: "TEHOL.IS", w: 13.25 }
 ];
-const totalW = HOLDINGS.reduce((a, b) => a + b.w, 0);
+
+// Toplam Ağırlık Hesabı (Hisseler + Repo)
+const stocksTotalW = HOLDINGS.reduce((a, b) => a + b.w, 0);
+const totalW = stocksTotalW + REPO_WEIGHT; 
 
 // UI Elements
 const ui = {
@@ -105,31 +112,50 @@ async function update() {
     ui.offDate.textContent = "-";
   }
 
-  // 2. Stocks & Impact
-  let totalWeightedPct = 0;
-  
+  // 2. Stocks & Impact Calculation
   const promises = HOLDINGS.map(async h => {
     const { pct } = await getYahooData(h.s);
-    const normW = h.w / totalW;
+    // Hissenin portföydeki *gerçek* ağırlığı (Repo dahil toplam içindeki payı)
+    const normW = h.w / totalW; 
     const impact = pct * normW;
     return { ...h, pct, impact };
   });
 
   const results = await Promise.all(promises);
+
+  // --- REPO HESAPLAMASI ---
+  // Günlük Getiri = Yıllık Oran / 365
+  const dailyRepoPct = REPO_ANNUAL_RATE / 365;
+  const repoNormW = REPO_WEIGHT / totalW;
+  const repoImpact = dailyRepoPct * repoNormW;
+
+  // Repoyu listeye ekle
+  results.push({
+    s: "TERS REPO",
+    w: REPO_WEIGHT,
+    pct: dailyRepoPct,
+    impact: repoImpact
+  });
+  // ------------------------
   
-  // Render List
+  // 3. Render & Final Sum
+  let totalWeightedPct = 0;
+
   results.forEach(r => {
     totalWeightedPct += r.impact;
     
     const item = document.createElement("div");
     item.className = "stock-item";
+    
+    // Görsel Ayarlar
     const colorClass = r.pct >= 0 ? "color-pos" : "color-neg";
     const sign = r.pct >= 0 ? "+" : "";
+    const cleanSym = r.s.replace(".IS",""); // .IS uzantısını temizle
     
     item.innerHTML = `
       <div class="stock-main">
-        <span class="stock-sym">${r.s.replace(".IS","")}</span>
-        <span class="stock-w">%${r.w.toFixed(2)} Ağırlık</span>
+        <span class="stock-sym">${cleanSym}</span>
+        <span class="stock-w">%${r.w.toFixed(2)} Ağr.</span>
       </div>
       <div class="stock-vals">
         <span class="stock-pct ${colorClass}">${sign}%${fmtPct(r.pct)}</span>
@@ -139,12 +165,11 @@ async function update() {
     ui.list.appendChild(item);
   });
   
-  // Lucide ikonlarını yeniden oluştur
   if (typeof lucide !== 'undefined') {
       lucide.createIcons();
   }
 
-  // 3. Final Estimate
+  // 4. Final Display
   const finalSign = totalWeightedPct >= 0 ? "+" : "";
   const finalClass = totalWeightedPct >= 0 ? "pos" : "neg";
   
@@ -181,9 +206,4 @@ if(localStorage.getItem(STORAGE_PRICE)) {
 ui.refresh.addEventListener("click", update);
 
 // Auto-start
-
 update();
-
-
-
-
