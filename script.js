@@ -4,16 +4,16 @@ const STORAGE_DATE = "tly_m_date";
 // Portfolio Data
 // Veriler Ekim 2025 TLY-TERA Fon Dağılım Raporu'ndan alınmıştır.
 const HOLDINGS = [
-  { s: "TERA.IS", w: 29.10 }, 
-  { s: "TEHOL.IS", w: 17.14 },  
-  { s: "SMRVA.IS", w: 11.28 },  
-  { s: "RALYH.IS", w: 11.12 },  
-  { s: "TRHOL.IS", w: 9.68 }, 
-  { s: "PEKGY.IS", w: 9.01 },  
-  { s: "DSTKF.IS", w: 4.65 }, 
-  { s: "GRTHO.IS", w: 0.86 }, 
+  { s: "TERA.IS", w: 22.49 }, 
+  { s: "DSTKF.IS", w: 17.23 },  
+  { s: "TURSG.IS", w: 1.23 },  
+  { s: "HMV.IS", w: 11.12 },  
+  { s: "PEKGY.IS", w: 6.96 }, 
+  { s: "TRHOL.IS", w: 7.48 },  
+  { s: "RALYH.IS", w: 8.59 }, 
+  { s: "SMRVA.IS", w: 8.72 }, 
   { s: "HMV.IS", w: 3.90 },  
-  { s: "XU030.IS", w: 4.12 }
+  { s: "TEHOL.IS", w: 13.25 }
 ];
 const totalW = HOLDINGS.reduce((a, b) => a + b.w, 0);
 
@@ -184,5 +184,6 @@ ui.refresh.addEventListener("click", update);
 // Auto-start
 
 update();
+
 
 
