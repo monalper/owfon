@@ -530,55 +530,97 @@ body {
 .landing-grid {
   display: grid;
   grid-template-columns: 1fr;
-  /* gap: var(--space-md); */
+  /* Restore column layout */
+  gap: var(--space-md);
 }
 
 .fund-card {
-  /* No background */
-  padding: var(--space-lg) 0;
+  position: relative;
+  padding: 24px;
+  background: rgba(28, 28, 30, 0.6);
+  /* Translucent surface */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: none;
+  border-radius: 24px;
   text-decoration: none;
   color: var(--text-main);
   display: flex;
   align-items: center;
-  gap: var(--space-md);
-  transition: transform 0.2s;
-  border-bottom: 1px solid var(--surface-secondary);
+  gap: 20px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  margin-bottom: 0;
+  /* Grid handles spacing */
 }
 
-.fund-card:last-child {
-  border-bottom: none;
+.fund-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.05), transparent 60%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
 }
 
+.fund-card:hover::after {
+  opacity: 1;
+}
 
+.fund-card:hover {
+  transform: translateY(-4px) scale(1.01);
+  background: rgba(44, 44, 46, 0.8);
+  /* border-color removed since border is none */
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+}
+
+.fund-card:active {
+  transform: scale(0.98);
+}
 
 .fund-logo-lg {
-  width: 64px;
-  height: 64px;
-  border-radius: 12px;
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  /* Squircle approximation */
   object-fit: cover;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .fund-info {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
+  z-index: 1;
 }
 
 .fund-card-title {
-  font-size: 20px;
-  font-weight: 600;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 .fund-card-desc {
-  font-size: 14px;
+  font-size: 15px;
   color: var(--text-muted);
+  font-weight: 600;
+  /* Semibold */
+  line-height: 1.3;
 }
 
-/* ---- Footer ---- */
-.app-footer {
-  padding: var(--space-lg) var(--space-md);
-  text-align: center;
-  font-size: 12px;
+.fund-arrow {
+  color: var(--text-muted);
+  width: 24px;
+  height: 24px;
+  transition: all 0.3s ease;
+  z-index: 1;
+}
+
+.fund-card:hover .fund-arrow {
+  color: var(--accent);
+  transform: translateX(4px);
 }
 
 .muted {
@@ -697,7 +739,7 @@ body {
   right: 0;
   width: 100%;
   height: 100%;
-  background: radial-gradient(circle at bottom right, rgba(255, 220, 66, 0.15), transparent 60%);
+  background: radial-gradient(circle at bottom right, rgba(88, 255, 66, 0.15), transparent 60%);
   pointer-events: none;
   z-index: 0;
 }

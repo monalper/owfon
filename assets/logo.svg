@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1171.5" height="387" viewBox="0 0 1171.5 387">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="341" height="340.609" viewBox="0 0 341 340.609">
   <defs>
     <clipPath id="clip-path">
       <rect width="340" height="340" fill="none"/>
@@ -13,7 +13,7 @@
       <rect x="124" y="-196" width="339.651" height="338.65" fill="none"/>
     </clipPath>
   </defs>
-  <g id="logo" transform="translate(-3016.5 -3408)">
+  <g id="logo" transform="translate(-3016.5 -3431)">
     <g id="Group_17" data-name="Group 17" transform="translate(2944.5 3364)">
       <g id="Scroll_Group_20" data-name="Scroll Group 20" transform="translate(72 67)" clip-path="url(#clip-path)" style="isolation: isolate">
         <g id="Rectangle_122" data-name="Rectangle 122" fill="none" stroke="#fff" stroke-width="50">
@@ -40,7 +40,5 @@
         </g>
       </g>
     </g>
-    <text id="Openwall_Fon." data-name="Openwall
-Fon." transform="translate(3426 3578)" fill="#fff" font-size="175" font-family="InterTight-Bold, Inter Tight" font-weight="700"><tspan x="0" y="0">Openwall</tspan><tspan x="0" y="175">Fon.</tspan></text>
   </g>
 </svg>
