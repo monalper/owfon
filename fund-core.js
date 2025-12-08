@@ -26,7 +26,8 @@ class FundCalculator {
             manualSection: document.getElementById("manualPriceSection"),
             input: document.getElementById("manualPriceInput"),
             saveBtn: document.getElementById("saveManualBtn"),
-            title: document.querySelector(".brand-title")
+            title: document.querySelector(".brand-title"),
+            share: document.getElementById("shareBtn")
         };
 
         this.init();
@@ -41,6 +42,10 @@ class FundCalculator {
 
         if (this.ui.refresh) {
             this.ui.refresh.addEventListener("click", () => this.update());
+        }
+
+        if (this.ui.share) {
+            this.ui.share.addEventListener("click", () => this.generateSnapshot());
         }
 
         if (this.ui.toggle && this.ui.manualSection) {
@@ -63,6 +68,105 @@ class FundCalculator {
         this.update();
     }
 
+    async generateSnapshot() {
+        if (typeof html2canvas === 'undefined') {
+            alert("Snapshot kütüphanesi yüklenemedi.");
+            return;
+        }
+
+        this.toggleLoader(true);
+        this.setStatus("Görsel hazırlanıyor...");
+
+        // Create temporary container for HORIZONTAL layout
+        const container = document.createElement('div');
+        Object.assign(container.style, {
+            position: 'fixed',
+            top: '-9999px',
+            left: '-9999px',
+            width: '640px',
+            height: '360px',
+            backgroundColor: '#1C1C1E', // var(--surface)
+            background: 'radial-gradient(circle at top right, #2C2C2E, #000000)',
+            color: '#FFFFFF',
+            fontFamily: '"Inter Tight", sans-serif',
+            borderRadius: '0',
+            padding: '32px 48px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxSizing: 'border-box',
+            zIndex: '9999'
+        });
+
+        // Content
+        const price = this.ui.estPrice.textContent;
+        const changeHTML = this.ui.estChange.innerHTML;
+        const color = this.ui.estChange.dataset.color || '#fff';
+
+        const date = new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+        const fundLogo = `assets/${this.fundCode.toLowerCase()}.webp`;
+
+        // Horizontal Layout HTML Structure
+        container.innerHTML = `
+            <div style="width: 100%; display:flex; justify-content: space-between; align-items: flex-start; margin-bottom: auto;">
+                <div style="display:flex; align-items:center; gap:16px;">
+                    <img src="${fundLogo}" style="width:64px; height:64px; border-radius:16px; object-fit:cover; box-shadow: 0 4px 12px rgba(0,0,0,0.3);" crossorigin="anonymous">
+                    <div style="display:flex; flex-direction:column;">
+                        <span style="font-size:32px; font-weight:700; letter-spacing:-0.5px; line-height:1;">${this.fundCode}</span>
+                        <span style="font-size:14px; color:#8E8E93; margin-top:4px;">Serbest Fon</span>
+                    </div>
+                </div>
+                <div style="text-align:right;">
+                     <div style="font-size:16px; font-weight:600; color:#8E8E93; margin-bottom:4px;">${date}</div>
+                </div>
+            </div>
+            
+            <div style="width: 100%; display:flex; align-items: flex-end; justify-content: space-between; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <div style="display:flex; flex-direction:column;">
+                     <div style="font-size:14px; color:#8E8E93; font-weight:600; margin-bottom:8px;">Tahmini Fiyat</div>
+                     <div style="font-size:56px; font-weight:800; line-height:1;">${price}</div>
+                </div>
+                
+                <div style="display:flex; flex-direction:column; align-items: flex-end;">
+                     <div style="display:inline-flex; align-items:center; justify-content:center; padding:8px 20px; border-radius:18px; background:rgba(255,255,255,0.1); font-size:28px; font-weight:700; color:${color};">
+                        ${changeHTML}
+                    </div>
+                </div>
+            </div>
+
+            <div style="width: 100%; display:flex; justify-content: space-between; align-items: center; margin-top: 24px;">
+                 <div style="font-size:13px; color:#8E8E93;">*Veriler tahminidir, kesinlik içermez.</div>
+                 <div style="font-size:16px; font-weight:600; color:#ffffff; opacity:0.8;">@KolinBorsa</div>
+            </div>
+        `;
+
+        document.body.appendChild(container);
+
+        try {
+            const canvas = await html2canvas(container, {
+                backgroundColor: null,
+                scale: 2,
+                useCORS: true,
+                allowTaint: true
+            });
+
+            const link = document.createElement('a');
+            link.download = `OWF_${this.fundCode}_${new Date().toISOString().split('T')[0]}.png`;
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+        } catch (err) {
+            console.error("Snapshot error:", err);
+            alert("Görsel oluşturulurken hata oluştu.");
+        } finally {
+            if (document.body.contains(container)) {
+                document.body.removeChild(container);
+            }
+            this.toggleLoader(false);
+            this.setStatus("Güncellendi: " + new Date().toLocaleTimeString("tr-TR", { hour: '2-digit', minute: '2-digit' }));
+        }
+    }
+
     injectLoader() {
         if (document.querySelector('.loading-overlay')) return;
 
@@ -76,6 +180,7 @@ class FundCalculator {
                 <div></div>
                 <div></div>
             </div>
+            <div class="loading-text">Hesaplanıyor...</div>
         </div>
         `;
         document.body.insertAdjacentHTML('beforeend', loaderHTML);
@@ -255,8 +360,13 @@ class FundCalculator {
         const finalSign = totalWeightedPct >= 0 ? "+" : "";
         const finalClass = totalWeightedPct >= 0 ? "pos" : "neg";
         const arrowIcon = totalWeightedPct >= 0 ? "trending-up" : "trending-down";
+        // Define color for snapshot usage
+        const colorHex = totalWeightedPct >= 0 ? '#30D158' : '#FF453A';
 
         this.ui.estChange.className = `change-badge ${finalClass}`;
+        // Store color in data attribute for snapshot
+        this.ui.estChange.dataset.color = colorHex;
+
         this.ui.estChange.innerHTML = `<i data-lucide="${arrowIcon}" style="width:24px; height:24px; vertical-align: text-bottom; margin-right:4px;"></i>${finalSign}%${this.fmtPct(totalWeightedPct)}`;
 
         // Re-run lucide for new icons
