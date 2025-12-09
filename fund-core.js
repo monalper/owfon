@@ -62,9 +62,6 @@ class FundCalculator {
             this.ui.input.placeholder = localStorage.getItem(this.storagePriceKey);
         }
 
-        // Set Title if provided
-        // document.title = `${this.fundCode} - OWFHP`;
-
         this.update();
     }
 
@@ -77,67 +74,101 @@ class FundCalculator {
         this.toggleLoader(true);
         this.setStatus("Görsel hazırlanıyor...");
 
-        // Create temporary container for HORIZONTAL layout
+        // Determine Data
+        // Reformat Price to 2 decimals for Snapshot
+        let rawPrice = this.ui.estPrice.textContent; // e.g. "2.769,7345 ₺"
+        let priceVal = parseFloat(rawPrice.replace(' ₺', '').replace(/\./g, '').replace(',', '.'));
+        // If parsing fails for some reason (e.g. "--"), keep original
+        const price = isNaN(priceVal) ? rawPrice : priceVal.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '₺';
+
+        let rawChange = this.ui.estChange.textContent.trim();
+
+        const isPos = this.ui.estChange.classList.contains('pos');
+
+        // Colors
+        // Green: #30D158 (Apple Green), Red: #FF453A (Apple Red)
+        const accentColor = isPos ? '#30D158' : '#FF453A';
+        // Background Gradients
+        const bgGradient = isPos
+            ? 'radial-gradient(circle at top left, #052e16 0%, #000000 100%)'
+            : 'radial-gradient(circle at top left, #3f0e0e 0%, #000000 100%)';
+
+        // Extract Number for reformatting (e.g. "+%0.33" -> "+0,33%")
+        let numericPart = rawChange.replace(/[^0-9,.]/g, '');
+        const sign = isPos ? "+" : "-";
+        const formattedChange = `${sign}${numericPart}%`;
+
+        const date = new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+
+        // Fund Name Mapping
+        const fundNames = {
+            'TLY': 'Tera Portföy',
+            'IOG': 'İş Portföy',
+            'ZJI': 'Ziraat Portföy',
+            'IIE': 'İstanbul Portföy',
+            'DFI': 'Atlas Portföy'
+        };
+        const fullName = fundNames[this.fundCode] || "Serbest Fon";
+
+        // Create Container
         const container = document.createElement('div');
         Object.assign(container.style, {
             position: 'fixed',
             top: '-9999px',
             left: '-9999px',
-            width: '640px',
-            height: '360px',
-            backgroundColor: '#1C1C1E', // var(--surface)
-            background: 'radial-gradient(circle at top right, #2C2C2E, #000000)',
+            width: '800px',
+            height: '600px',
+            background: bgGradient,
             color: '#FFFFFF',
             fontFamily: '"Inter Tight", sans-serif',
             borderRadius: '0',
-            padding: '32px 48px',
+            padding: '50px',
             display: 'flex',
             flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
+            justifyContent: 'space-between',
             boxSizing: 'border-box',
             zIndex: '9999'
         });
 
-        // Content
-        const price = this.ui.estPrice.textContent;
-        const changeHTML = this.ui.estChange.innerHTML;
-        const color = this.ui.estChange.dataset.color || '#fff';
-
-        const date = new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+        // Icon path
         const fundLogo = `assets/${this.fundCode.toLowerCase()}.webp`;
 
-        // Horizontal Layout HTML Structure
         container.innerHTML = `
-            <div style="width: 100%; display:flex; justify-content: space-between; align-items: flex-start; margin-bottom: auto;">
-                <div style="display:flex; align-items:center; gap:16px;">
-                    <img src="${fundLogo}" style="width:64px; height:64px; border-radius:16px; object-fit:cover; box-shadow: 0 4px 12px rgba(0,0,0,0.3);" crossorigin="anonymous">
-                    <div style="display:flex; flex-direction:column;">
-                        <span style="font-size:32px; font-weight:700; letter-spacing:-0.5px; line-height:1;">${this.fundCode}</span>
-                        <span style="font-size:14px; color:#8E8E93; margin-top:4px;">Serbest Fon</span>
-                    </div>
-                </div>
-                <div style="text-align:right;">
-                     <div style="font-size:16px; font-weight:600; color:#8E8E93; margin-bottom:4px;">${date}</div>
-                </div>
-            </div>
-            
-            <div style="width: 100%; display:flex; align-items: flex-end; justify-content: space-between; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                <div style="display:flex; flex-direction:column;">
-                     <div style="font-size:14px; color:#8E8E93; font-weight:600; margin-bottom:8px;">Tahmini Fiyat</div>
-                     <div style="font-size:56px; font-weight:800; line-height:1;">${price}</div>
-                </div>
+            <!-- Top Row -->
+            <div style="display:flex; justify-content:space-between; align-items:flex-end; width:100%;">
                 
-                <div style="display:flex; flex-direction:column; align-items: flex-end;">
-                     <div style="display:inline-flex; align-items:center; justify-content:center; padding:8px 20px; border-radius:18px; background:rgba(255,255,255,0.1); font-size:28px; font-weight:700; color:${color};">
-                        ${changeHTML}
+                <!-- Logo & Title -->
+                <div style="display:flex; align-items:center; gap:20px;">
+                    <div style="
+                        width:80px; height:80px; 
+                        background:#fff; 
+                        border-radius:20px; 
+                        display:flex; align-items:center; justify-content:center; 
+                        padding:5px;
+                        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+                    ">
+                        <img src="${fundLogo}" style="width:100%; height:100%; object-fit:contain; border-radius:14px;" crossorigin="anonymous">
+                    </div>
+                    <div style="display:flex; flex-direction:column;">
+                        <span style="font-size:48px; font-weight:800; line-height:1; letter-spacing:-1px;">${this.fundCode}</span>
+                        <span style="font-size:24px; font-weight:600; color:#e0e0e0; margin-top:4px; white-space:nowrap;">${fullName.length > 35 ? fullName.substring(0, 32) + '...' : fullName}</span>
                     </div>
                 </div>
+
+                <!-- Date -->
+                <div style="font-size:24px; font-weight:600; color:#e0e0e0; margin-bottom: 4px;">${date}</div>
             </div>
 
-            <div style="width: 100%; display:flex; justify-content: space-between; align-items: center; margin-top: 24px;">
-                 <div style="font-size:13px; color:#8E8E93;">*Veriler tahminidir, kesinlik içermez.</div>
-                 <div style="font-size:16px; font-weight:600; color:#ffffff; opacity:0.8;">@KolinBorsa</div>
+            <!-- Middle Row: Values -->
+            <div style="flex:1; display:flex; align-items:center; justify-content:center; gap:40px;">
+                <span style="font-size:80px; font-weight:800; color:${accentColor}; letter-spacing:-2px;">${formattedChange}</span>
+                <span style="font-size:80px; font-weight:800; color:#ffffff; letter-spacing:-2px;">${price}</span>
+            </div>
+
+            <!-- Bottom Row: Footer -->
+            <div style="display:flex; justify-content:space-between; align-items:flex-end; width:100%;">
+                <span style="font-size:20px; font-weight:600; color:#CCCCCC;">Tahminidir. Kesinlik içermez.</span>
+                <span style="font-size:24px; font-weight:700; color:#ffffff;">x.com / KolinBorsa</span>
             </div>
         `;
 
@@ -146,7 +177,7 @@ class FundCalculator {
         try {
             const canvas = await html2canvas(container, {
                 backgroundColor: null,
-                scale: 2,
+                scale: 2, // 1600x1200 result
                 useCORS: true,
                 allowTaint: true
             });
@@ -163,7 +194,7 @@ class FundCalculator {
                 document.body.removeChild(container);
             }
             this.toggleLoader(false);
-            this.setStatus("Güncellendi: " + new Date().toLocaleTimeString("tr-TR", { hour: '2-digit', minute: '2-digit' }));
+            this.setStatus("Görsel indirildi");
         }
     }
 
